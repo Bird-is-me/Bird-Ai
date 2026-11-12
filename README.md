@@ -1,6 +1,6 @@
 🔗***Main***
 —Try ___Bird Ai___ in url:
-***https://bird-ai-app.edgeone.dev/***
+***https://bird-is-me.github.io/Bird-Ai/***
 🧠Model Rename:
 +gemini-3.5-flash
 +gemini-3.5-flash-lite
