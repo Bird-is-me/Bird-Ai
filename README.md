@@ -1,6 +1,6 @@
 🔗***Main***
 —Try ___Bird Ai___ in url:
-***https://bird-ai.edgeone.dev/***
+***https://bird-ai-app.edgeone.dev/***
 🧠Model Rename:
 +gemini-3.5-flash
 +gemini-3.5-flash-lite
@@ -8,10 +8,10 @@
 +support Vietnamese language
 +152 language support
 –version
-+alpha-1.1
++Release-9.42
 -version code
 +type:html
-+beta1.5
++releas- 9.63
 [base Ai]
 📁***LocalStorage***
 💾***Save***
