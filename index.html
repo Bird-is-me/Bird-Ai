@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bird AI</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:#111;
+    color:#fff;
+    font-family:Arial,sans-serif;
+}
+
+#app{
+    width:100%;
+    max-width:850px;
+    height:100vh;
+    margin:auto;
+    display:flex;
+    flex-direction:column;
+}
+
+header{
+    padding:16px;
+    border-bottom:1px solid #333;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.header-left{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.window-dots{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.window-dots span{
+    width:11px;
+    height:11px;
+    flex:0 0 11px;
+    border-radius:50%;
+}
+
+.window-dots .red{
+    background:#ff5f57;
+}
+
+.window-dots .yellow{
+    background:#febc2e;
+}
+
+.window-dots .green{
+    background:#28c840;
+}
+
+.title{
+    font-size:22px;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.title img{
+    width:28px;
+    height:28px;
+    object-fit:contain;
+}
+
+#settings{
+    background:#222;
+    border:1px solid #444;
+    color:white;
+    border-radius:10px;
+    padding:8px 12px;
+    cursor:pointer;
+}
+
+#settings img{
+    display:block;
+    width:20px;
+    height:20px;
+    object-fit:contain;
+}
+
+#config{
+    display:none;
+    padding:12px;
+    background:#191919;
+    border-bottom:1px solid #333;
+    max-height:55vh;
+    overflow-y:auto;
+}
+
+#config input:not([type="checkbox"]),
+#config textarea,
+#config select{
+    width:100%;
+    margin:5px 0;
+    padding:12px;
+    border:1px solid #444;
+    border-radius:8px;
+    background:#222;
+    color:white;
+    outline:none;
+}
+
+.settings-tabs{
+    display:flex;
+    gap:6px;
+    overflow-x:auto;
+    padding-bottom:10px;
+    border-bottom:1px solid #333;
+}
+
+.settings-tab,
+.settings-action{
+    flex:0 0 auto;
+    padding:9px 11px;
+    border:1px solid #444;
+    border-radius:6px;
+    background:#252525;
+    color:#eee;
+    cursor:pointer;
+}
+
+.settings-tab[aria-selected="true"]{
+    border-color:#8b9aaa;
+    background:#343b43;
+}
+
+.settings-panel{
+    padding:12px 0 2px;
+}
+
+.settings-panel h2{
+    margin:2px 0 10px;
+    font-size:16px;
+}
+
+.settings-panel p,
+.settings-panel label{
+    color:#bbb;
+    font-size:13px;
+}
+
+.settings-panel textarea{
+    min-height:84px;
+    resize:vertical;
+}
+
+.settings-panel input[type="checkbox"]{
+    width:auto;
+    margin-right:8px;
+}
+
+.settings-list{
+    display:grid;
+    gap:8px;
+    max-height:190px;
+    overflow-y:auto;
+    margin:10px 0;
+}
+
+.settings-entry{
+    padding:9px;
+    border:1px solid #393939;
+    border-radius:6px;
+    color:#ddd;
+    font-size:13px;
+    overflow-wrap:anywhere;
+}
+
+.settings-entry strong{
+    display:block;
+    margin-bottom:4px;
+    color:#fff;
+}
+
+.settings-empty{
+    color:#888;
+    font-size:13px;
+}
+
+#save{
+    margin-top:5px;
+    padding:10px 15px;
+    border:0;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+#status{
+    padding:7px 15px;
+    color:#888;
+    font-size:13px;
+}
+
+#chat{
+    flex:1;
+    overflow-y:auto;
+    padding:15px;
+}
+
+.msg{
+    max-width:85%;
+    margin:10px 0;
+    padding:13px 15px;
+    border-radius:15px;
+    white-space:pre-wrap;
+    line-height:1.5;
+    animation:messageIn .25s ease;
+}
+
+.user{
+    margin-left:auto;
+    background:#333;
+}
+
+.ai{
+    margin-right:auto;
+    background:#242424;
+}
+
+.ai.code-message{
+    max-width:100%;
+    padding:0;
+    background:transparent;
+}
+
+.answer-text{
+    margin:10px 0;
+    white-space:pre-wrap;
+    line-height:1.6;
+}
+
+.message-actions{
+    display:flex;
+    gap:7px;
+    margin:8px 0 14px;
+}
+
+.message-actions button{
+    padding:6px 9px;
+    border:1px solid #3b4655;
+    border-radius:5px;
+    background:#212830;
+    color:#e6edf3;
+    font:12px Arial,sans-serif;
+    cursor:pointer;
+}
+
+.code-block{
+    margin:14px 0;
+    overflow:hidden;
+    border:1px solid #3b4655;
+    border-radius:8px;
+    background:#0d1117;
+    box-shadow:0 8px 26px #0005;
+}
+
+.code-toolbar{
+    min-height:42px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:6px 10px;
+    border-bottom:1px solid #30363d;
+    background:#161b22;
+}
+
+.code-language{
+    color:#9da7b3;
+    font:600 12px/1.3 monospace;
+    text-transform:uppercase;
+}
+
+.code-actions{
+    display:flex;
+    gap:6px;
+}
+
+.code-actions button{
+    padding:6px 9px;
+    border:1px solid #3b4655;
+    border-radius:5px;
+    background:#212830;
+    color:#e6edf3;
+    font:600 12px Arial,sans-serif;
+    cursor:pointer;
+}
+
+.code-actions button:hover{
+    background:#303943;
+}
+
+.code-block pre{
+    margin:0;
+    padding:14px;
+    overflow:auto;
+    color:#e6edf3;
+    font:13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;
+    tab-size:4;
+}
+
+.code-block code{
+    white-space:pre;
+}
+
+.code-block code.hljs{
+    padding:0;
+    background:transparent;
+}
+
+@keyframes messageIn{
+    from{
+        opacity:0;
+        transform:translateY(8px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+/* Loading */
+
+.loading{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    color:#aaa;
+}
+
+.loading-text{
+    font-size:14px;
+}
+
+.dot{
+    width:6px;
+    height:6px;
+    background:#aaa;
+    border-radius:50%;
+    animation:dotLoading 1.4s infinite ease-in-out;
+}
+
+.dot:nth-child(2){
+    animation-delay:.2s;
+}
+
+.dot:nth-child(3){
+    animation-delay:.4s;
+}
+
+@keyframes dotLoading{
+    0%,80%,100%{
+        opacity:.25;
+        transform:translateY(0);
+    }
+
+    40%{
+        opacity:1;
+        transform:translateY(-4px);
+    }
+}
+
+/* Input */
+
+#bar{
+    display:flex;
+    gap:8px;
+    padding:12px;
+    border-top:1px solid #333;
+}
+
+#input{
+    flex:1;
+    min-width:0;
+    padding:14px;
+    border:1px solid #333;
+    outline:none;
+    border-radius:12px;
+    background:#292929;
+    color:white;
+    font-size:15px;
+}
+
+#send{
+    border:0;
+    border-radius:12px;
+    min-width:82px;
+    height:46px;
+    padding:0 18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+#send-dots{
+    display:none;
+    align-items:center;
+    gap:4px;
+}
+
+#send-dots .dot{
+    width:6px;
+    height:6px;
+}
+
+#send.is-sending #send-label{
+    display:none;
+}
+
+#send.is-sending #send-dots{
+    display:flex;
+}
+
+#send:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+#stop{
+    height:46px;
+    padding:0 14px;
+    border:1px solid #774848;
+    border-radius:10px;
+    background:#382323;
+    color:#fff;
+    cursor:pointer;
+}
+
+#stop[hidden]{
+    display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+<header>
+    <div class="header-left">
+        <div class="window-dots" aria-hidden="true">
+            <span class="red"></span>
+            <span class="yellow"></span>
+            <span class="green"></span>
+        </div>
+        <div class="title">
+            <img src="https://cdn.ln-cdn.com/c/web7AbJZ012I9NdDp3C/images/bird.png" alt="">
+            Bird AI
+        </div>
+    </div>
+
+    <button id="settings" type="button" aria-label="Settings" title="Settings">
+        <img src="https://cdn.ln-cdn.com/c/web7AbJZ012I9NdDp3C/images/bird.png" alt="">
+    </button>
+</header>
+
+<div id="config">
+
+    <nav class="settings-tabs" role="tablist" aria-label="Settings">
+        <button class="settings-tab" type="button" role="tab" aria-selected="true" data-panel="apiPanel">API</button>
+        <button class="settings-tab" type="button" role="tab" aria-selected="false" data-panel="historyPanel">History</button>
+        <button class="settings-tab" type="button" role="tab" aria-selected="false" data-panel="pluginPanel">Plugin</button>
+        <button class="settings-tab" type="button" role="tab" aria-selected="false" data-panel="skillsPanel">Skills</button>
+        <button class="settings-tab" type="button" role="tab" aria-selected="false" data-panel="tokensPanel">Your Token</button>
+        <button class="settings-tab" type="button" role="tab" aria-selected="false" data-panel="archivePanel">Archive</button>
+    </nav>
+
+    <section class="settings-panel" id="apiPanel" role="tabpanel">
+        <input id="apiKey" type="password" placeholder="Gemini API Key">
+        <input id="model" type="text" value="gemini-2.5-flash" placeholder="Model">
+        <button id="save" type="button">Save</button>
+    </section>
+
+    <section class="settings-panel" id="historyPanel" role="tabpanel" hidden>
+        <h2>Conversation History</h2>
+        <div id="historyList" class="settings-list"></div>
+        <button id="clearHistory" class="settings-action" type="button">Clear conversation</button>
+    </section>
+
+    <section class="settings-panel" id="pluginPanel" role="tabpanel" hidden>
+        <h2>Instruction Plugin</h2>
+        <label><input id="pluginEnabled" type="checkbox">Enable this plugin</label>
+        <textarea id="pluginPrompt" placeholder="Plugin instructions"></textarea>
+        <button id="savePlugin" class="settings-action" type="button">Save plugin</button>
+    </section>
+
+    <section class="settings-panel" id="skillsPanel" role="tabpanel" hidden>
+        <h2>Skills</h2>
+        <input id="skillFile" type="file" accept=".txt,.md,.skill,text/plain,text/markdown">
+        <select id="skillSelect" aria-label="Choose a skill"></select>
+        <button id="runSkill" class="settings-action" type="button">Run selected skill</button>
+        <button id="stopSkill" class="settings-action" type="button">Stop skill</button>
+        <div id="skillStatus" class="settings-empty">No active skill</div>
+        <div id="skillList" class="settings-list"></div>
+    </section>
+
+    <section class="settings-panel" id="tokensPanel" role="tabpanel" hidden>
+        <h2>Your Token Usage</h2>
+        <div id="tokenUsage" class="settings-entry">No API usage recorded yet.</div>
+    </section>
+
+    <section class="settings-panel" id="archivePanel" role="tabpanel" hidden>
+        <h2>Archive</h2>
+        <button id="archiveConversation" class="settings-action" type="button">Archive current conversation</button>
+        <button id="saveBackup" class="settings-action" type="button">Save local backup</button>
+        <button id="loadBackup" class="settings-action" type="button">Load local backup</button>
+        <input id="backupFile" type="file" accept=".json,application/json" hidden>
+        <div id="archiveList" class="settings-list"></div>
+    </section>
+
+</div>
+
+<div id="status">
+    Ready
+</div>
+
+<div id="chat"></div>
+
+<div id="bar">
+
+    <input
+        id="input"
+        type="text"
+        placeholder="Ask Bird AI..."
+        autocomplete="off"
+    >
+
+    <button id="send" type="button" aria-label="Send">
+        <span id="send-label">Send</span>
+        <span id="send-dots" aria-hidden="true">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+        </span>
+    </button>
+    <button id="stop" type="button" hidden>Stop</button>
+
+</div>
+
+</div>
+
+<script>
+
+const apiKeyInput =
+    document.getElementById("apiKey");
+
+const modelInput =
+    document.getElementById("model");
+
+const settings =
+    document.getElementById("settings");
+
+const config =
+    document.getElementById("config");
+
+const save =
+    document.getElementById("save");
+
+const chat =
+    document.getElementById("chat");
+
+const input =
+    document.getElementById("input");
+
+const sendButton =
+    document.getElementById("send");
+
+const stopButton =
+    document.getElementById("stop");
+
+const status =
+    document.getElementById("status");
+
+const API_KEY = "AQ.Ab8RN6LqUd4ezYbrag64onKCndS_D0sndyd7tFXBnVGDzjp93w";
+const DAILY_TOKEN_LIMIT = 1530291;
+
+function todayKey(){
+    return new Date().toISOString().slice(0, 10);
+}
+
+function readStoredValue(key, fallback){
+    try{
+        const value = localStorage.getItem(key);
+        return value ? JSON.parse(value) : fallback;
+    }catch(error){
+        return fallback;
+    }
+}
+
+let history = readStoredValue("bird_history", []);
+let archives = readStoredValue("bird_archives", []);
+let skills = readStoredValue("bird_skills", []);
+let tokenUsage = readStoredValue("bird_token_usage", null);
+let activeSkillId = localStorage.getItem("bird_active_skill") || "";
+let activeRequestController = null;
+
+function resetDailyUsageIfNeeded(){
+    if(tokenUsage && tokenUsage.day === todayKey()) return;
+    tokenUsage = {
+        day:todayKey(),
+        daily:0,
+        prompt:0,
+        output:0,
+        total:0,
+        lifetime:tokenUsage?.lifetime || 0
+    };
+    localStorage.setItem("bird_token_usage", JSON.stringify(tokenUsage));
+}
+
+resetDailyUsageIfNeeded();
+
+
+/* =========================
+   LOAD SETTINGS
+========================= */
+
+apiKeyInput.value =
+    localStorage.getItem("bird_api_key") || API_KEY;
+
+modelInput.value =
+    localStorage.getItem("bird_model") ||
+    "gemini-3.5-flash";
+
+
+/* =========================
+   SETTINGS
+========================= */
+
+settings.onclick = () => {
+
+    if(config.style.display === "block"){
+
+        config.style.display = "none";
+
+    }else{
+
+        config.style.display = "block";
+
+    }
+
+};
+
+document.querySelectorAll(".settings-tab").forEach(tab => {
+    tab.onclick = () => {
+        document.querySelectorAll(".settings-tab").forEach(item => {
+            item.setAttribute("aria-selected", item === tab ? "true" : "false");
+        });
+        document.querySelectorAll(".settings-panel").forEach(panel => {
+            panel.hidden = panel.id !== tab.dataset.panel;
+        });
+        renderSettingsData();
+    };
+});
+
+
+/* =========================
+   SAVE
+========================= */
+
+save.onclick = () => {
+
+    localStorage.setItem(
+        "bird_api_key",
+        apiKeyInput.value.trim()
+    );
+
+    localStorage.setItem(
+        "bird_model",
+        modelInput.value.trim()
+    );
+
+    status.textContent =
+        "Model + API Key saved";
+
+    config.style.display =
+        "none";
+
+};
+
+function saveHistory(){
+    localStorage.setItem("bird_history", JSON.stringify(history));
+    renderHistory();
+}
+
+function renderHistory(){
+    const list = document.getElementById("historyList");
+    list.replaceChildren();
+    if(!history.length){
+        list.textContent = "No messages in this conversation.";
+        list.className = "settings-list settings-empty";
+        return;
+    }
+    list.className = "settings-list";
+    history.forEach(item => {
+        const entry = document.createElement("div");
+        const text = (item.parts || []).map(part => part.text || "").join("");
+        entry.className = "settings-entry";
+        const heading = document.createElement("strong");
+        heading.textContent = item.role === "model" ? "Bird AI" : "You";
+        entry.append(heading, document.createTextNode(text));
+        list.appendChild(entry);
+    });
+}
+
+function renderSkills(){
+    const select = document.getElementById("skillSelect");
+    const list = document.getElementById("skillList");
+    select.replaceChildren();
+    list.replaceChildren();
+    if(!skills.length){
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "No uploaded skills";
+        select.appendChild(option);
+        list.textContent = "Upload a text or Markdown skill file to add one.";
+        list.className = "settings-list settings-empty";
+    }else{
+        list.className = "settings-list";
+        skills.forEach(skill => {
+            const option = document.createElement("option");
+            option.value = skill.id;
+            option.textContent = skill.name;
+            select.appendChild(option);
+            const entry = document.createElement("div");
+            entry.className = "settings-entry";
+            entry.textContent = skill.name;
+            list.appendChild(entry);
+        });
+        if(skills.some(skill => skill.id === activeSkillId)){
+            select.value = activeSkillId;
+        }
+    }
+    const activeSkill = skills.find(skill => skill.id === activeSkillId);
+    document.getElementById("skillStatus").textContent = activeSkill
+        ? "Active: " + activeSkill.name
+        : "No active skill";
+}
+
+function renderArchives(){
+    const list = document.getElementById("archiveList");
+    list.replaceChildren();
+    if(!archives.length){
+        list.textContent = "No archived conversations.";
+        list.className = "settings-list settings-empty";
+        return;
+    }
+    list.className = "settings-list";
+    archives.forEach(archive => {
+        const entry = document.createElement("div");
+        entry.className = "settings-entry";
+        const heading = document.createElement("strong");
+        heading.textContent = new Date(archive.createdAt).toLocaleString();
+        const restore = document.createElement("button");
+        restore.className = "settings-action";
+        restore.type = "button";
+        restore.textContent = "Restore";
+        restore.onclick = () => {
+            history = archive.history;
+            localStorage.setItem("bird_history", JSON.stringify(history));
+            renderConversation();
+            renderHistory();
+            status.textContent = "Conversation restored";
+        };
+        const remove = document.createElement("button");
+        remove.className = "settings-action";
+        remove.type = "button";
+        remove.textContent = "Delete";
+        remove.onclick = () => {
+            archives = archives.filter(item => item.id !== archive.id);
+            localStorage.setItem("bird_archives", JSON.stringify(archives));
+            renderArchives();
+        };
+        entry.append(heading, document.createTextNode(archive.history.length + " messages "), restore, remove);
+        list.appendChild(entry);
+    });
+}
+
+function renderTokenUsage(){
+    resetDailyUsageIfNeeded();
+    const panel = document.getElementById("tokenUsage");
+    const remaining = tokenUsage.daily === 0
+        ? "∞"
+        : Math.max(0, DAILY_TOKEN_LIMIT - tokenUsage.daily).toLocaleString();
+    panel.textContent = "Today: " + tokenUsage.daily.toLocaleString() +
+        " / " + DAILY_TOKEN_LIMIT.toLocaleString() + " tokens. Remaining: " + remaining +
+        ". Last request: " + tokenUsage.prompt.toLocaleString() + " prompt, " +
+        tokenUsage.output.toLocaleString() + " response, " + tokenUsage.total.toLocaleString() +
+        " total. Lifetime: " + tokenUsage.lifetime.toLocaleString() +
+        " tokens. Daily count resets at UTC midnight.";
+}
+
+function renderSettingsData(){
+    renderHistory();
+    renderSkills();
+    renderArchives();
+    renderTokenUsage();
+}
+
+function buildSystemInstruction(){
+    const instructions = [
+        "You are Bird AI. Give clear, helpful and accurate answers. Always respond in English unless the user asks for another language."
+    ];
+    const pluginPrompt = document.getElementById("pluginPrompt").value.trim();
+    if(document.getElementById("pluginEnabled").checked && pluginPrompt){
+        instructions.push("Enabled plugin instructions:\n" + pluginPrompt);
+    }
+    const activeSkill = skills.find(skill => skill.id === activeSkillId);
+    if(activeSkill){
+        instructions.push("Active skill (" + activeSkill.name + "):\n" + activeSkill.prompt);
+    }
+    return instructions.join("\n\n");
+}
+
+function renderConversation(){
+    chat.replaceChildren();
+    if(!history.length){
+        addMessage("Hello! I am Bird AI.\n\nYour Gemini key is loaded automatically. Open Settings to change it.", "ai");
+        return;
+    }
+    history.forEach((item, index) => {
+        const text = (item.parts || []).map(part => part.text || "").join("");
+        if(item.role === "model") renderAnswer(text, index === history.length - 1);
+        else addMessage(text, "user");
+    });
+}
+
+function retryLastResponse(){
+    if(input.disabled) return;
+    const responseIndex = history.length - 1;
+    if(responseIndex < 1 || history[responseIndex].role !== "model"){
+        status.textContent = "No response available to retry";
+        return;
+    }
+    const userMessage = history[responseIndex - 1];
+    if(userMessage.role !== "user") return;
+    const retryText = (userMessage.parts || []).map(part => part.text || "").join("");
+    history = history.slice(0, responseIndex - 1);
+    saveHistory();
+    renderConversation();
+    input.value = retryText;
+    send();
+}
+
+document.getElementById("clearHistory").onclick = () => {
+    history = [];
+    saveHistory();
+    renderConversation();
+    status.textContent = "Conversation cleared";
+};
+
+document.getElementById("pluginEnabled").checked =
+    localStorage.getItem("bird_plugin_enabled") === "true";
+document.getElementById("pluginPrompt").value =
+    localStorage.getItem("bird_plugin_prompt") || "";
+document.getElementById("savePlugin").onclick = () => {
+    localStorage.setItem("bird_plugin_enabled", document.getElementById("pluginEnabled").checked);
+    localStorage.setItem("bird_plugin_prompt", document.getElementById("pluginPrompt").value.trim());
+    status.textContent = "Plugin saved";
+};
+
+document.getElementById("skillFile").onchange = async event => {
+    const file = event.target.files[0];
+    if(!file) return;
+    const prompt = await file.text();
+    if(!prompt.trim()){
+        status.textContent = "Skill file is empty";
+        return;
+    }
+    skills.push({id:String(Date.now()), name:file.name, prompt});
+    localStorage.setItem("bird_skills", JSON.stringify(skills));
+    event.target.value = "";
+    renderSkills();
+    status.textContent = "Skill uploaded";
+};
+
+document.getElementById("runSkill").onclick = () => {
+    activeSkillId = document.getElementById("skillSelect").value;
+    if(!skills.some(skill => skill.id === activeSkillId)){
+        status.textContent = "Upload a skill first";
+        return;
+    }
+    localStorage.setItem("bird_active_skill", activeSkillId);
+    renderSkills();
+    status.textContent = "Skill activated";
+};
+
+document.getElementById("stopSkill").onclick = () => {
+    activeSkillId = "";
+    localStorage.removeItem("bird_active_skill");
+    renderSkills();
+    status.textContent = "Skill stopped";
+};
+
+document.getElementById("archiveConversation").onclick = () => {
+    if(!history.length){
+        status.textContent = "There is no conversation to archive";
+        return;
+    }
+    archives.unshift({id:String(Date.now()), createdAt:new Date().toISOString(), history:JSON.parse(JSON.stringify(history))});
+    localStorage.setItem("bird_archives", JSON.stringify(archives));
+    renderArchives();
+    status.textContent = "Conversation archived";
+};
+
+document.getElementById("saveBackup").onclick = () => {
+    const backup = {
+        version:1,
+        savedAt:new Date().toISOString(),
+        history,
+        archives,
+        skills,
+        activeSkillId,
+        tokenUsage,
+        model:modelInput.value,
+        pluginEnabled:document.getElementById("pluginEnabled").checked,
+        pluginPrompt:document.getElementById("pluginPrompt").value
+    };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], {type:"application/json"}));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "bird-ai-backup-" + todayKey() + ".json";
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    status.textContent = "Local backup saved. API key was not included.";
+};
+
+document.getElementById("loadBackup").onclick = () => {
+    document.getElementById("backupFile").click();
+};
+
+document.getElementById("backupFile").onchange = async event => {
+    const file = event.target.files[0];
+    if(!file) return;
+    try{
+        const backup = JSON.parse(await file.text());
+        const validConversation = conversation => Array.isArray(conversation) &&
+            conversation.every(item => item && ["user", "model"].includes(item.role) &&
+                Array.isArray(item.parts) && item.parts.every(part => part && typeof part.text === "string"));
+        if(backup.version !== 1 || !validConversation(backup.history) ||
+            !Array.isArray(backup.archives) ||
+            !backup.archives.every(item => item && validConversation(item.history)) ||
+            !Array.isArray(backup.skills) ||
+            !backup.skills.every(skill => skill && typeof skill.id === "string" &&
+                typeof skill.name === "string" && typeof skill.prompt === "string")){
+            throw new Error("This file is not a valid Bird AI backup.");
+        }
+        if(!confirm("Load this backup and replace the saved conversations, skills, and usage data?")) return;
+
+        history = backup.history;
+        archives = backup.archives;
+        skills = backup.skills;
+        activeSkillId = typeof backup.activeSkillId === "string" ? backup.activeSkillId : "";
+        const importedUsage = backup.tokenUsage && typeof backup.tokenUsage === "object"
+            ? backup.tokenUsage
+            : {};
+        const usageNumber = value => Number.isFinite(value) && value >= 0 ? value : 0;
+        tokenUsage = {
+            day:typeof importedUsage.day === "string" ? importedUsage.day : todayKey(),
+            daily:usageNumber(importedUsage.daily),
+            prompt:usageNumber(importedUsage.prompt),
+            output:usageNumber(importedUsage.output),
+            total:usageNumber(importedUsage.total),
+            lifetime:usageNumber(importedUsage.lifetime)
+        };
+        if(tokenUsage.day !== todayKey()){
+            tokenUsage = {day:todayKey(), daily:0, prompt:0, output:0, total:0, lifetime:tokenUsage.lifetime || 0};
+        }
+        modelInput.value = typeof backup.model === "string" ? backup.model : modelInput.value;
+        document.getElementById("pluginEnabled").checked = Boolean(backup.pluginEnabled);
+        document.getElementById("pluginPrompt").value = typeof backup.pluginPrompt === "string" ? backup.pluginPrompt : "";
+
+        localStorage.setItem("bird_history", JSON.stringify(history));
+        localStorage.setItem("bird_archives", JSON.stringify(archives));
+        localStorage.setItem("bird_skills", JSON.stringify(skills));
+        localStorage.setItem("bird_active_skill", activeSkillId);
+        localStorage.setItem("bird_token_usage", JSON.stringify(tokenUsage));
+        localStorage.setItem("bird_model", modelInput.value);
+        localStorage.setItem("bird_plugin_enabled", document.getElementById("pluginEnabled").checked);
+        localStorage.setItem("bird_plugin_prompt", document.getElementById("pluginPrompt").value);
+        renderConversation();
+        renderSettingsData();
+        status.textContent = "Local backup loaded. Existing API key was kept.";
+    }catch(error){
+        status.textContent = error.message || "Could not load backup.";
+    }finally{
+        event.target.value = "";
+    }
+};
+
+
+/* =========================
+   ADD MESSAGE
+========================= */
+
+function addMessage(text,type){
+
+    const div =
+        document.createElement("div");
+
+    div.className =
+        "msg " + type;
+
+    div.textContent =
+        text;
+
+    chat.appendChild(div);
+
+    chat.scrollTop =
+        chat.scrollHeight;
+
+    return div;
+}
+
+function renderAnswer(text, canRetry=false){
+
+    const message =
+        document.createElement("div");
+
+    message.className =
+        "msg ai code-message";
+
+    const codeFence =
+        /```([^\n`]*)\r?\n?([\s\S]*?)```/g;
+
+    let lastIndex = 0;
+    let match;
+    let codeNumber = 0;
+
+    while((match = codeFence.exec(text)) !== null){
+
+        if(match.index > lastIndex){
+            const paragraph =
+                document.createElement("div");
+
+            paragraph.className = "answer-text";
+            paragraph.textContent = text.slice(lastIndex, match.index);
+            message.appendChild(paragraph);
+        }
+
+        const code =
+            match[2].replace(/^\r?\n/, "");
+
+        const requestedLanguage =
+            match[1].trim().split(/\s+/)[0].toLowerCase();
+
+        const detected =
+            requestedLanguage && hljs.getLanguage(requestedLanguage)
+                ? hljs.highlight(code, {language:requestedLanguage})
+                : hljs.highlightAuto(code);
+
+        const language =
+            detected.language || "plaintext";
+
+        const block =
+            document.createElement("section");
+
+        block.className = "code-block";
+
+        const toolbar =
+            document.createElement("div");
+
+        toolbar.className = "code-toolbar";
+
+        const languageLabel =
+            document.createElement("span");
+
+        languageLabel.className = "code-language";
+        languageLabel.textContent = language === "plaintext"
+            ? "Detected: Plain text"
+            : "Detected: " + language;
+
+        const actions =
+            document.createElement("div");
+
+        actions.className = "code-actions";
+
+        const copyButton =
+            document.createElement("button");
+
+        copyButton.type = "button";
+        copyButton.textContent = "Copy raw code";
+        copyButton.onclick = async () => {
+            try{
+                await navigator.clipboard.writeText(code);
+                copyButton.textContent = "Copied";
+            }catch(error){
+                const temporary = document.createElement("textarea");
+                temporary.value = code;
+                document.body.appendChild(temporary);
+                temporary.select();
+                document.execCommand("copy");
+                temporary.remove();
+                copyButton.textContent = "Copied";
+            }
+            setTimeout(() => copyButton.textContent = "Copy raw code", 1500);
+        };
+
+        const downloadButton =
+            document.createElement("button");
+
+        downloadButton.type = "button";
+        downloadButton.textContent = "Download";
+        downloadButton.onclick = () => {
+            const extensions = {
+                javascript:"js", typescript:"ts", python:"py", html:"html",
+                css:"css", json:"json", bash:"sh", shell:"sh", java:"java",
+                c:"c", cpp:"cpp", csharp:"cs", go:"go", rust:"rs",
+                ruby:"rb", php:"php", sql:"sql", markdown:"md", yaml:"yml",
+                xml:"xml", plaintext:"txt"
+            };
+            const extension = extensions[language] || "txt";
+            codeNumber += 1;
+            const url = URL.createObjectURL(new Blob([code], {type:"text/plain"}));
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "bird-code-" + codeNumber + "." + extension;
+            link.click();
+            URL.revokeObjectURL(url);
+        };
+
+        actions.append(copyButton, downloadButton);
+        toolbar.append(languageLabel, actions);
+
+        const pre =
+            document.createElement("pre");
+
+        const codeElement =
+            document.createElement("code");
+
+        codeElement.className = "hljs language-" + language;
+        codeElement.innerHTML = detected.value;
+        pre.appendChild(codeElement);
+        block.append(toolbar, pre);
+        message.appendChild(block);
+        lastIndex = codeFence.lastIndex;
+    }
+
+    if(lastIndex < text.length || lastIndex === 0){
+        const paragraph =
+            document.createElement("div");
+
+        paragraph.className = "answer-text";
+        paragraph.textContent = text.slice(lastIndex);
+        message.appendChild(paragraph);
+    }
+
+    const messageActions = document.createElement("div");
+    messageActions.className = "message-actions";
+
+    const copyResponse = document.createElement("button");
+    copyResponse.type = "button";
+    copyResponse.textContent = "Copy response";
+    copyResponse.onclick = async () => {
+        try{
+            await navigator.clipboard.writeText(text);
+        }catch(error){
+            const temporary = document.createElement("textarea");
+            temporary.value = text;
+            document.body.appendChild(temporary);
+            temporary.select();
+            document.execCommand("copy");
+            temporary.remove();
+        }
+        copyResponse.textContent = "Copied";
+        setTimeout(() => copyResponse.textContent = "Copy response", 1500);
+    };
+    messageActions.appendChild(copyResponse);
+
+    if(canRetry){
+        const retryResponse = document.createElement("button");
+        retryResponse.type = "button";
+        retryResponse.textContent = "Retry";
+        retryResponse.onclick = retryLastResponse;
+        messageActions.appendChild(retryResponse);
+    }
+
+    message.appendChild(messageActions);
+    chat.appendChild(message);
+    chat.scrollTop = chat.scrollHeight;
+    return message;
+}
+
+
+/* =========================
+   LOADING MESSAGE
+========================= */
+
+function addLoading(){
+
+    const div =
+        document.createElement("div");
+
+    div.className =
+        "msg ai";
+
+    div.innerHTML = `
+        <div class="loading">
+
+            <span class="loading-text">
+                Bird AI is thinking
+            </span>
+
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+
+        </div>
+    `;
+
+    chat.appendChild(div);
+
+    chat.scrollTop =
+        chat.scrollHeight;
+
+    return div;
+}
+
+
+/* =========================
+   SEND
+========================= */
+
+async function send(){
+
+    const text =
+        input.value.trim();
+
+    if(!text) return;
+
+
+    const API_KEY =
+        apiKeyInput.value.trim();
+
+    const MODEL =
+        modelInput.value.trim();
+
+
+    if(!API_KEY){
+
+        addMessage(
+            "❌ Please enter your Gemini API Key.",
+            "ai"
+        );
+
+        config.style.display =
+            "block";
+
+        return;
+    }
+
+
+    if(!MODEL){
+
+        addMessage(
+            "❌ Please enter a model.",
+            "ai"
+        );
+
+        return;
+    }
+
+    resetDailyUsageIfNeeded();
+    if(tokenUsage.daily >= DAILY_TOKEN_LIMIT){
+        addMessage("Daily token allowance reached. It resets at UTC midnight.", "ai");
+        status.textContent = "Daily allowance reached";
+        return;
+    }
+
+
+    addMessage(
+        text,
+        "user"
+    );
+
+    input.value = "";
+
+    input.disabled = true;
+
+    sendButton.disabled = true;
+    sendButton.classList.add("is-sending");
+    sendButton.setAttribute("aria-label", "Sending");
+
+    status.textContent =
+        "Bird AI is thinking...";
+
+
+    const loadingMessage =
+        addLoading();
+
+    activeRequestController = new AbortController();
+    stopButton.hidden = false;
+
+    history.push({
+
+        role:"user",
+
+        parts:[
+            {
+                text:text
+            }
+        ]
+
+    });
+
+
+    try{
+
+        const API_URL =
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+            + encodeURIComponent(MODEL)
+            + ":generateContent";
+
+
+        const response =
+            await fetch(
+                API_URL,
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json",
+
+                        "x-goog-api-key":
+                            API_KEY
+                            },
+
+                            signal:activeRequestController.signal,
+
+                    body:JSON.stringify({
+
+                        systemInstruction:{
+                            parts:[
+                                {
+                                    text:buildSystemInstruction()
+                                }
+                            ]
+                        },
+
+                        contents:history,
+
+                        generationConfig:{
+                            temperature:0.7,
+                            maxOutputTokens:8192
+                        }
+
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(!response.ok){
+
+            console.error(data);
+
+            throw new Error(
+                data?.error?.message ||
+                "API request failed."
+            );
+
+        }
+
+
+        const answer =
+            data
+            ?.candidates?.[0]
+            ?.content?.parts
+            ?.map(
+                part => part.text || ""
+            )
+            .join("")
+            .trim();
+
+
+        if(!answer){
+
+            throw new Error(
+                "The model did not return a response."
+            );
+
+        }
+
+
+        loadingMessage.remove();
+
+
+        renderAnswer(
+            answer, true,
+        );
+
+
+        history.push({
+
+            role:"model",
+
+            parts:[
+                {
+                    text:answer
+                }
+            ]
+
+        });
+
+        saveHistory();
+
+        if(data.usageMetadata){
+            const promptTokens = data.usageMetadata.promptTokenCount || 0;
+            const outputTokens = data.usageMetadata.candidatesTokenCount || 0;
+            const totalTokens = data.usageMetadata.totalTokenCount || promptTokens + outputTokens;
+            tokenUsage = {
+                day:todayKey(),
+                daily:(tokenUsage.day === todayKey() ? tokenUsage.daily : 0) + totalTokens,
+                prompt:promptTokens,
+                output:outputTokens,
+                total:totalTokens,
+                lifetime:(tokenUsage?.lifetime || 0) + totalTokens
+            };
+            localStorage.setItem("bird_token_usage", JSON.stringify(tokenUsage));
+            renderTokenUsage();
+        }
+
+
+        status.textContent =
+            "Ready";
+
+
+    }catch(error){
+
+        console.error(error);
+
+        loadingMessage.remove();
+
+        if(error.name === "AbortError"){
+            status.textContent = "Response stopped";
+        }else{
+            addMessage(
+                "❌ API Error:\n\n" +
+                error.message,
+                "ai"
+            );
+
+            status.textContent =
+                "API Error";
+        }
+
+        history.pop();
+
+    }finally{
+
+        input.disabled =
+            false;
+
+        sendButton.disabled =
+            false;
+
+        stopButton.hidden = true;
+        activeRequestController = null;
+
+        sendButton.classList.remove("is-sending");
+        sendButton.setAttribute("aria-label", "Send");
+
+        input.focus();
+
+    }
+
+}
+
+
+/* =========================
+   EVENTS
+========================= */
+
+sendButton.onclick =
+    send;
+
+stopButton.onclick = () => {
+    activeRequestController?.abort();
+    status.textContent = "Stopping response...";
+};
+
+
+input.addEventListener(
+    "keydown",
+    event => {
+
+        if(event.key === "Enter"){
+
+            event.preventDefault();
+
+            send();
+
+        }
+
+    }
+);
+
+
+/* =========================
+   START
+========================= */
+
+renderConversation();
+renderSettingsData();
+
+</script>
+
+</body>
+</html>
